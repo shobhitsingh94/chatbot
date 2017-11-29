@@ -6,12 +6,13 @@ import * as types from '../api/constant';
 
 export function* addNewUser(action) {
     try {
-        const books = yield call(apiCall, {
+        const data = yield call(apiCall, {
             method: 'post',
             endpoint: endPoints.user,
             payload: action.user
         });
-        yield put({type: types.ADD_USER, user: action.user});
+        console.log("in saga", data.result);
+        yield put({type: types.ADD_USER, user: data.result.user});
     } catch(err) {
         console.log("error",err);
     }

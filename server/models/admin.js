@@ -21,6 +21,9 @@ const AdminSchema = new mongoose.Schema({
     },
     password : {
         type: String
+    },
+    socketId : {
+        type: String
     }
 });
 

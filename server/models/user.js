@@ -8,10 +8,12 @@ const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         unique: true,
-        require: true
+        require: true,
+        default : ""
     },
     status : {
-        type : String
+        type : String,
+        default: "offline"
     },
     userid : {
         type : Number
@@ -19,8 +21,12 @@ const UserSchema = new mongoose.Schema({
     password : {
         type: String
     },
-    admin: {
-        type: boolean
+    isAdmin: {
+        type: Boolean
+    },
+    socketId: {
+        type: String,
+        default: ""
     }
 });
 

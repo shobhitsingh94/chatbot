@@ -1,6 +1,6 @@
 //import {getBookByIdAsync, editBookByIdAsync, isSuccess} from '../actions';
 import { connect } from 'react-redux';
-import DetailComponent from '../components/Detail';
+import Admin from '../components/Admin';
 
 const mapStateToProps = ({state}) => {
     return {
@@ -16,6 +16,6 @@ const mapDispatchToProps = dispatch => ({
     //isSuccessAction: () => dispatch(isSuccess(false))
 });
 
-const Detail = connect(mapStateToProps, mapDispatchToProps)(DetailComponent);
-export default Detail;
+const AdminPanel = connect(mapStateToProps, mapDispatchToProps)(Admin);
+export default AdminPanel;
 

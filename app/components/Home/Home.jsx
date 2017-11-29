@@ -4,13 +4,17 @@ import ChatBot from 'react-simple-chatbot';
 import {renderBooksList, emailValidator} from "../../utility";
 import io from 'socket.io-client';
 
-class Home extends React.PureComponent {
+const socket = io('http://localhost:9000');
+
+class Home extends React.Component {
     constructor(props) {
         super(props);
+        this.state = {
+            connected : false
+        };
         this.user = {
-            name: '',
-            email: ''
-        }
+            name: ''
+        };
     }
 
     getCredentials = (value, type) => {
@@ -18,13 +22,30 @@ class Home extends React.PureComponent {
             case 'name':
                 this.user.name = value;
                 break;
-            case 'email':
-                this.user.email = value;
-                //this.addUser(this.user);
-                break;
             default:
                 break;
         }
+    }
+
+    init(user, type){
+        //switch (type) {
+        //    case 'admin':
+        //        socket.emit('subscribe', {user: user})
+        //        break;
+        //    case 'client':
+        //        socket.emit('subscribe', {user: user})
+        //        break;
+        //    default:
+        //        break;
+        //}
+        //if(!(this.state.connected)){
+        //    socket.emit('subscribe', {user: user})
+        //    this.setState({connected: true})
+        //}
+        socket.emit('subscribe', {user: user});
+        socket.on ('subscribeSuccess', function (data) {
+            console.log("successss===========", data );
+        });
     }
 
     addUser = (user) => {
@@ -32,12 +53,12 @@ class Home extends React.PureComponent {
         this.props.addNewUser(details);
     }
 
-    componentWillMount() {
-
-    }
-
-    componentWillReceiveProps() {
-
+    componentWillReceiveProps(nextProps, prv) {
+        if (!_.isEmpty(nextProps.user) && nextProps.user.isAdmin) {
+            nextProps.history.push('/admin');
+            this.init(nextProps.user,"admin");
+        } else if (!_.isEmpty(nextProps.user))
+            this.init(nextProps.user,"client");
     }
 
 
@@ -86,7 +107,7 @@ class Home extends React.PureComponent {
                             },
                             {
                               id: '5',
-                              component : <InputForm addUser={this.addUser} option={true}/>,
+                              component : <InputForm option={true} addUser={this.addUser} {...this.props}/>,
                               waitAction: true,
                               trigger : '7'
                             },
@@ -114,30 +135,33 @@ Home.propTypes = {
     addNewUser: PropTypes.func.isRequired,
 
 };
+
 export default Home;
 
-class InputForm extends React.Component {
+
+export class InputForm extends React.PureComponent {
     constructor(props) {
         super(props);
         this.details = {
-            id: '',
+            userid: '',
             password: '',
             email: ''
+        };
+        this.state = {
+            showForm : true
         }
     }
 
     onChange = (type, evt) => {
-        let id = evt.target.value;
-        this.setState({id: evt.target.value});
         switch (type) {
-            case 'id':
-                this.details.id = evt.target.value;
+            case 'userid':
+                this.details.userid = Number(evt.target.value);
                 break;
             case 'password':
                 this.details.password = evt.target.value;
                 break;
             case 'email':
-                this.details.password = evt.target.value;
+                this.details.email = evt.target.value;
                 break;
             default:
                 break;
@@ -148,44 +172,64 @@ class InputForm extends React.Component {
     onSubmit = (evt) => {
         evt.preventDefault();
         this.props.addUser(this.details);
-        this.props.triggerNextStep();
+    }
+
+    componentWillReceiveProps(nextProps, prv) {
+        if(!_.isEmpty(nextProps.user) && !_.isEmpty(nextProps.user.isAdmin))
+            nextProps.history.push('/admin');
+        else {
+            this.setState({showForm : false});
+            nextProps.triggerNextStep();
+            //nextProps.createConnection();
+        }
     }
 
     render() {
-        const {option } = this.props;
         return (
-        <div className="container">
-            { this.props.option ? (
-                <form className="form-horizontal" onSubmit={this.onSubmit}>
-                    <div style={{"marginBottom": "25px"}} className="input-group">
-                        <span className="input-group-addon"><i className="glyphicon glyphicon-user"></i></span>
-                        <input className="form-control" defaultValue="" placeholder="userid"
-                               onChange={this.onChange.bind(this,'id')}/>
-                    </div>
-                    <div style={{"marginBottom": "25px"}} className="input-group">
-                        <span className="input-group-addon"><i className="glyphicon glyphicon-lock"></i></span>
-                        <input type="password" className="form-control" defaultValue='' placeholder="password"
-                               onChange={this.onChange.bind(this,'password')}/>
-                    </div>
-                    <div style={{"marginTop":"10px"}} className="form-group">
-                        <div className="col-sm-12 controls">
-                            <button type="submit" className="btn btn-success">Submit</button>
+            <div className="container">
+                {this.state.showForm ?
+                    <div>
+                        { this.props.option ? (
+                            <form className="form-horizontal" onSubmit={this.onSubmit}>
+                                <div style={{"marginBottom": "25px"}} className="input-group">
+                                    <span className="input-group-addon"><i
+                                        className="glyphicon glyphicon-user"></i></span>
+                                    <input className="form-control" defaultValue="" placeholder="userid"
+                                           onChange={this.onChange.bind(this,'userid')}/>
+                                </div>
+                                <div style={{"marginBottom": "25px"}} className="input-group">
+                                    <span className="input-group-addon"><i
+                                        className="glyphicon glyphicon-lock"></i></span>
+                                    <input type="password" className="form-control" defaultValue=''
+                                           placeholder="password"
+                                           onChange={this.onChange.bind(this,'password')}/>
+                                </div>
+                                <div style={{"marginTop":"10px"}} className="form-group">
+                                    <div className="col-sm-12 controls">
+                                        <button type="submit" className="btn btn-success">Submit</button>
+                                    </div>
+                                </div>
+                            </form> ) : (
+                            <form className="form-horizontal" onSubmit={this.onSubmit}>
+                                <div style={{"marginBottom": "25px"}} className="input-group">
+                                    <span className="input-group-addon"><i
+                                        className="glyphicon glyphicon-user"></i></span>
+                                    <input className="form-control" defaultValue="" placeholder="email"
+                                           onChange={this.onChange.bind(this,'email')}/>
+                                </div>
+                                <div style={{"marginTop":"10px"}} className="form-group">
+                                    <div className="col-sm-12 controls">
+                                        <button type="submit" className="btn btn-success">Submit</button>
+                                    </div>
+                                </div>
+                            </form>)
+                        }
                         </div>
-                    </div>
-                </form> ) : (
-                <form className="form-horizontal" onSubmit={this.onSubmit}>
-                    <div style={{"marginBottom": "25px"}} className="input-group">
-                        <span className="input-group-addon"><i className="glyphicon glyphicon-user"></i></span>
-                        <input className="form-control" defaultValue="" placeholder="email"
-                               onChange={this.onChange.bind(this,'email')}/>
-                    </div>
-                    <div style={{"marginTop":"10px"}} className="form-group">
-                        <div className="col-sm-12 controls">
-                            <button type="submit" className="btn btn-success">Submit</button>
-                        </div>
-                    </div>
-                </form>)
-            }
-        </div> );
+                     : <div>Successfully registered</div> }
+            </div>
+        );
     }
 }
+
+
+

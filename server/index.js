@@ -16,6 +16,9 @@ const fs = require('fs');
 const socket = require('socket.io');
 const {Server} = require('http');
 const mongoose = require('mongoose');
+const Users = require('./models/user');
+const Admins = require('./models/admin');
+const helper = require('./helper/response');
 const open = require('open');
 
 const server = Server(app);
@@ -112,9 +115,41 @@ io.on('connection', function(socket) {
     console.log("socket connection on=======");
     console.log('a user connected')
     socket.on('subscribe', (data) => {
-            room = data.room
-            socket.join(room)
-            console.log('joined room', room)
+            console.log('111111111111')
+            io.sockets.emit ('subscribeSuccess', data.user);
+        if(data.user.isAdmin) {
+            console.log("subscription========", data, socket.id);
+            Users.findOneAndUpdate({_id : data.user._id},{ $set: {status : "online"}}).exec(function (err,user) {
+                console.log("subscription=======2222=", user);
+                if (err) {
+                    res.status(422).json(helper.responseObject(422, err, null, true));
+                } else if(user){
+                    user.socketId = socket.id;
+                    new Admins(user).save(function (err, admin) {
+                        if(err) {
+                            console.log("err", err);
+                            //res.status(422).json(helper.responseObject(422, err, null, true));
+                        }else {
+                            console.log("admin added successfully", admin);
+                            //res.status(200).json(helper.responseObject(200, user, null, true));
+                        }
+                    })
+                }
+            });
+        }else {
+            Users.findOneAndUpdate({_id : data.user._id},{ $set: {socketId : socket.id, status: "online"}}).exec(function (err,user) {
+                console.log("subscription=======2222=", user);
+                if (err) {
+                    res.status(422).json(helper.responseObject(422, err, null, true));
+                } else if(user){
+                    console.log("client added successfully", user);
+                }
+            });
+
+        }
+            //room = data.room
+            //socket.join(room)
+            //console.log('joined room', room)
         }
     )
     socket.on('unsubscribe', () => { socket.leave(room)

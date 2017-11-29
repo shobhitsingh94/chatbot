@@ -1,18 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import {getBooksAsync, getFilteredBooks, addNewUser} from '../actions';
+import { addNewUser} from '../actions';
 import HomeComponent from '../components/Home';
 import { getBooks } from '../utility/selectors';
 
-const mapStateToProps = ({state},props) => {
+const mapStateToProps = (state,props) => {
+    console.log("pppppppppppp", state);
     return {
-       // books: getBooks(state, props)
+       user: state.user
     }
 };
 
 const mapDispatchToProps = dispatch => ({
-    //getBooksAsync: () =>dispatch(getBooksAsync()),
-    //getFilteredBooks: (key) => dispatch(getFilteredBooks(key)),
     addNewUser: (user) => dispatch(addNewUser(user))
 });
 
