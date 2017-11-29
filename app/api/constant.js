@@ -12,5 +12,7 @@ export const EDIT_BOOK = "EDIT_BOOK";
 //chatbot
 export const ADD_USER = "ADD_USER";
 export const ADD_USER_ASYNC = "ADD_USER_ASYNC";
+export const NEW_CHAT_ROOM_ASYNC = "NEW_CHAT_ROOM_ASYNC";
+export const NEW_CHAT_ROOM = "NEW_CHAT_ROOM";
 export const GET_ADMINS_ASYNC ="GET_ADMINS_ASYNC";
 export const GET_ADMINS="GET_ADMINS" ;

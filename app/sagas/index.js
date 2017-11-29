@@ -17,6 +17,20 @@ export function* addNewUser(action) {
         console.log("error",err);
     }
 }
+
+export function* createChatRoom(action) {
+    try {
+        const data = yield call(apiCall, {
+            method: 'post',
+            endpoint: endPoints.room,
+            payload: action.room
+        });
+        console.log("in saga room==", data.result);
+        yield put({type: types.NEW_CHAT_ROOM, room: data.result.room});
+    } catch(err) {
+        console.log("error",err);
+    }
+}
 export function* getAdmins() {
     try {
         const admins = yield call(apiCall, {
@@ -66,14 +80,14 @@ export function* watchGetAdmins() {
     yield takeEvery(types.GET_ADMINS_ASYNC, getAdmins)
 }
 
-export function* watchEditBook() {
-    yield takeEvery(types.EDIT_BOOK_ASYNC, editBookByIdAsync)
+export function* watchCreateRoom() {
+    yield takeEvery(types.NEW_CHAT_ROOM_ASYNC, createChatRoom)
 }
 
 export default function* rootSaga() {
     yield all([
         watchAddUser(),
         watchGetAdmins(),
-        watchEditBook()
+        watchCreateRoom()
     ])
 }

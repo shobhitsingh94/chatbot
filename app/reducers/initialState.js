@@ -28,6 +28,10 @@ export default {
 
     user : {
 
+    },
+
+    room: {
+
     }
 
 }

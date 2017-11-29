@@ -111,48 +111,58 @@ if (isDeveloping) {
 
 //socket
 
-io.on('connection', function(socket) {
+io.on('connection', function (socket) {
     console.log("socket connection on=======");
     console.log('a user connected')
     socket.on('subscribe', (data) => {
-            console.log('111111111111')
-            io.sockets.emit ('subscribeSuccess', data.user);
-        if(data.user.isAdmin) {
-            console.log("subscription========", data, socket.id);
-            Users.findOneAndUpdate({_id : data.user._id},{ $set: {status : "online"}}).exec(function (err,user) {
-                console.log("subscription=======2222=", user);
-                if (err) {
-                    res.status(422).json(helper.responseObject(422, err, null, true));
-                } else if(user){
-                    user.socketId = socket.id;
-                    new Admins(user).save(function (err, admin) {
-                        if(err) {
-                            console.log("err", err);
-                            //res.status(422).json(helper.responseObject(422, err, null, true));
-                        }else {
-                            console.log("admin added successfully", admin);
-                            //res.status(200).json(helper.responseObject(200, user, null, true));
-                        }
-                    })
-                }
-            });
-        }else {
-            Users.findOneAndUpdate({_id : data.user._id},{ $set: {socketId : socket.id, status: "online"}}).exec(function (err,user) {
-                console.log("subscription=======2222=", user);
-                if (err) {
-                    res.status(422).json(helper.responseObject(422, err, null, true));
-                } else if(user){
-                    console.log("client added successfully", user);
-                }
-            });
+            io.sockets.emit('subscribeSuccess', data.user);
+            if (data.user.isAdmin) {
+                console.log("subscription========", data, socket.id);
+                Users.findOneAndUpdate({_id: data.user._id}, {$set: {status: "online"}}).exec(function (err, user) {
+                    console.log("subscription=======2222=", user);
+                    if (err) {
+                        res.status(422).json(helper.responseObject(422, err, null, true));
+                    } else if (user) {
+                        user.socketId = socket.id;
+                        new Admins(user).save(function (err, admin) {
+                            if (err) {
+                                console.log("err", err);
+                                //res.status(422).json(helper.responseObject(422, err, null, true));
+                            } else {
+                                console.log("admin added successfully", admin);
+                                //res.status(200).json(helper.responseObject(200, user, null, true));
+                            }
+                        })
+                    }
+                });
+            } else {
+                Users.findOneAndUpdate({_id: data.user._id}, {
+                    $set: {
+                        socketId: socket.id,
+                        status: "online"
+                    }
+                }).exec(function (err, user) {
+                    console.log("subscription=======2222=", user);
+                    if (err) {
+                        res.status(422).json(helper.responseObject(422, err, null, true));
+                    } else if (user) {
+                        console.log("client added successfully", user);
+                    }
+                });
 
-        }
+            }
             //room = data.room
             //socket.join(room)
             //console.log('joined room', room)
         }
     )
-    socket.on('unsubscribe', () => { socket.leave(room)
+    socket.on('joinRoom', (room) => {
+        socket.join(room);
+        console.log('joined room', room)
+    })
+
+    socket.on('unsubscribe', () => {
+        socket.leave(room)
         console.log('leaving room', room)
     })
 
@@ -160,7 +170,7 @@ io.on('connection', function(socket) {
         console.log('a user disconnected')
     })
 
-    socket.on('chat message', function(msg) {
+    socket.on('chat message', function (msg) {
         console.log('sending message to', msg.room)
         console.log('this message', msg)
         let message = new Message({user: msg.user, content: msg.message, room: msg.room})

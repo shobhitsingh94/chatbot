@@ -1,9 +1,10 @@
 import { combineReducers } from 'redux'
-import {booksReducer as library, userReducer} from './book'
 import user from './userReducer';
+import room from './roomReducer';
 
 const rootReducer = combineReducers({
-    user
+    user,
+    room
 });
 
 export default rootReducer;

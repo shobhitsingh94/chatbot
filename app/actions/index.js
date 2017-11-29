@@ -6,11 +6,10 @@ export const getAdmins = () => {
     }
 };
 
-export const editBookByIdAsync = (id, data) => {
+export const createChatRoom = (room) => {
     return {
-        type: types.EDIT_BOOK_ASYNC,
-        id: id,
-        formData : data
+        type: types.NEW_CHAT_ROOM_ASYNC,
+        room : room
     }
 };
 

@@ -43,9 +43,18 @@ class Home extends React.Component {
         //    this.setState({connected: true})
         //}
         socket.emit('subscribe', {user: user});
-        socket.on ('subscribeSuccess', function (data) {
-            console.log("successss===========", data );
+        let self = this;
+        socket.on('subscribeSuccess', function (user) {
+            let room = {};
+            room.title = user.name;
+            room.owner = user._id;
+            self.props.createChatRoom(room)
         });
+
+    }
+
+    createRoom = () => {
+
     }
 
     addUser = (user) => {
@@ -57,8 +66,13 @@ class Home extends React.Component {
         if (!_.isEmpty(nextProps.user) && nextProps.user.isAdmin) {
             nextProps.history.push('/admin');
             this.init(nextProps.user,"admin");
-        } else if (!_.isEmpty(nextProps.user))
+        } else if (!_.isEmpty(nextProps.user) && _.isEmpty(nextProps.room))
             this.init(nextProps.user,"client");
+
+        if(!_.isEmpty(nextProps.room)) {
+            socket.emit('joinRoom', {room: nextProps.room});
+        }
+
     }
 
 
