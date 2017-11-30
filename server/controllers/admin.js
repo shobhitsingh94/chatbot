@@ -1,4 +1,4 @@
-const Admins = require('../models/user');
+const Admins = require('../models/admin');
 const helper = require('../helper/response');
 
 module.exports = {

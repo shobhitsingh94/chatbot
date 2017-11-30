@@ -8,7 +8,7 @@ const bodyParser = require("body-parser");
 const isDeveloping = process.env.NODE_ENV !== 'prod';
 const port = 9000;
 const app = express();
-
+const _ = require('lodash');
 
 const fs = require('fs');
 
@@ -115,16 +115,25 @@ io.on('connection', function (socket) {
     console.log("socket connection on=======");
     console.log('a user connected')
     socket.on('subscribe', (data) => {
+            console.log("wen normal user online===========");
             io.sockets.emit('subscribeSuccess', data.user);
             if (data.user.isAdmin) {
                 console.log("subscription========", data, socket.id);
-                Users.findOneAndUpdate({_id: data.user._id}, {$set: {status: "online"}}).exec(function (err, user) {
+                Users.findOneAndUpdate({_id: data.user._id}, {$set: {status: "online", socketId: socket.id}}).exec(function (err, user) {
                     console.log("subscription=======2222=", user);
                     if (err) {
                         res.status(422).json(helper.responseObject(422, err, null, true));
                     } else if (user) {
-                        user.socketId = socket.id;
-                        new Admins(user).save(function (err, admin) {
+                        let obj ={
+                            email: user.email,
+                            status: user.status,
+                            socketId: socket.id,
+                            password: user.password,
+                            userid: user.userid,
+                            name: user.name
+                        }
+
+                        new Admins(obj).save(function (err, admin) {
                             if (err) {
                                 console.log("err", err);
                                 //res.status(422).json(helper.responseObject(422, err, null, true));
@@ -157,7 +166,16 @@ io.on('connection', function (socket) {
         }
     )
     socket.on('joinRoom', (room) => {
-        socket.join(room);
+        socket.join(room, function(err) {
+            console.log("success of joinnnnnnnnnnn", io.sockets.connected);
+            Admins.find({}).exec(function(err, admins) {
+                console.log("admins",admins, admins[0].socketId);
+                //_.map(admins, (admin, index) => {
+                io.sockets.connected[admins[0].socketId].emit("greeting-request", "Hey admin how r u???");
+                //})
+            })
+            //socket.broadcast.emit
+        });
         console.log('joined room', room)
     })
 

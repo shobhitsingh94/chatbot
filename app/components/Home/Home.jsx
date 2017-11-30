@@ -48,8 +48,14 @@ class Home extends React.Component {
             let room = {};
             room.title = user.name;
             room.owner = user._id;
-            self.props.createChatRoom(room)
+            if(user.isAdmin)
+                self.props.createChatRoom(room)
         });
+
+        socket.on('greeting-request', function (msg) {
+            console.log(msg);
+        });
+
 
     }
 
@@ -63,9 +69,9 @@ class Home extends React.Component {
     }
 
     componentWillReceiveProps(nextProps, prv) {
-        if (!_.isEmpty(nextProps.user) && nextProps.user.isAdmin) {
-            nextProps.history.push('/admin');
+        if (!_.isEmpty(nextProps.user) && nextProps.user.isAdmin && _.isEmpty(nextProps.room)) {
             this.init(nextProps.user,"admin");
+            //nextProps.history.push('/admin');
         } else if (!_.isEmpty(nextProps.user) && _.isEmpty(nextProps.room))
             this.init(nextProps.user,"client");
 
